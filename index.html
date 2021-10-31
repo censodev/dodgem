@@ -118,12 +118,16 @@
                     { x: 1, y: 2 },
                     { x: 2, y: 2 },
                 ],
+                state: [
+                    [-1, 0, 0],
+                    [-1, 0, 0],
+                    [0, 1, 1],
+                ],
                 pick: {},
             }
         },
         watch: {
             turn(value) {
-                console.log(value)
                 if (value === 'B') {
                     this.botMove();
                 }
@@ -131,13 +135,17 @@
         },
         methods: {
             isBlack(x, y) {
-                return this.blacks.some(b => b.x === x && b.y === y);
+                return this.state[y][x] === -1;
             },
             isWhite(x, y) {
-                return this.whites.some(w => w.x === x && w.y === y);
+                return this.state[y][x] === 1;
             },
             switchTurn() {
                 this.turn = this.turn === 'W' ? 'B' : 'W';
+                if (this.turn === 'W')
+                    console.log('Đến lượt của bạn')
+                else
+                    console.log('Chờ máy...')
             },
             botMove() {
                 // minimax here
@@ -158,8 +166,8 @@
                 if (Math.abs(this.pick.x - x) > 1 || y - this.pick.y < -1 || y - this.pick.y > 0) {
                     return;
                 }
-                const index = this.whites.findIndex(item => item.x === this.pick.x && item.y === this.pick.y);
-                this.whites[index] = { x, y };
+                this.state[this.pick.y][this.pick.x] = 0
+                this.state[y][x] = 1;
                 this.pick = {};
                 this.switchTurn();
             },
@@ -168,13 +176,12 @@
                 if (this.pick.y !== 0) {
                     return;
                 }
-                const index = this.whites.findIndex(item => item.x === this.pick.x && item.y === this.pick.y);
-                this.whites[index] = {x: -1, y: -1};
+                this.state[this.pick.y][this.pick.x] = 0
                 this.pick = {};
                 this.switchTurn();
             },
-            findNextStates() {
-
+            findNextStates(state) {
+                
             },
         },
     }
