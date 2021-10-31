@@ -17,20 +17,29 @@
     #game {
         width: 100vw;
         height: 100vh;
+    }
+
+    .map-wrapper {
+        width: 100%;
+        height: 100%;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
     }
 
-    .map {
+    .map-space {
+        flex-grow: 1;
+        width: 100%;
+    }
 
+    .map {
         border: 2px solid black;
     }
 
     .map_block {
-        width: 10rem;
-        height: 10rem;
+        width: 7rem;
+        height: 7rem;
         border: 2px solid black;
         display: flex;
         justify-content: center;
@@ -38,8 +47,8 @@
     }
 
     .circle {
-        width: 7rem;
-        height: 7rem;
+        width: 6rem;
+        height: 6rem;
         border-radius: 50%;
         border: 4px solid black;
     }
@@ -51,28 +60,29 @@
 
 <body>
     <div id="game">
-        <div class="map">
-            <div v-for="y in depth" class="d-flex">
-                <div v-for="x in depth" class="map_block">
-                    <div v-if="isWhite(x, y)" @click="playerPick(x, y)" class="circle"></div>
-                    <div v-else-if="isBlack(x, y)" class="circle circle-black"></div>
-                    <div v-else @click="playerMove(x, y)" class="w-100 h-100"></div>
+        <div class="map-wrapper">
+            <div class="map-space" @click="playerMoveEdge()"></div>
+            <div class="map">
+                <div v-for="(_y, y) in depth" class="d-flex">
+                    <div v-for="(_x, x) in depth" class="map_block">
+                        <div v-if="isWhite(x, y)" @click="playerPick(x, y)" class="circle"></div>
+                        <div v-else-if="isBlack(x, y)" class="circle circle-black"></div>
+                        <div v-else @click="playerMove(x, y)" class="w-100 h-100"></div>
+                    </div>
                 </div>
             </div>
+            <div class="map-space" @click="playerMoveEdge()"></div>
         </div>
-        <div class="modal fade show d-block" data-bs-backdrop="static" id="exampleModal" tabindex="-1"
+        <div v-if="showModal" class="modal fade show d-block" data-bs-backdrop="static" id="exampleModal" tabindex="-1"
             aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
                     <div class="modal-body text-center">
                         <h5>Chọn lượt chơi của bạn</h5>
                     </div>
                     <div class="modal-footer d-flex justify-content-center">
-                        <button type="button" class="btn btn-primary" @click="turn = 'W'">Đi trước</button>
-                        <button type="button" class="btn btn-danger" @click="turn = 'B'">Đi sau</button>
+                        <button type="button" class="btn btn-primary" @click="turn = 'W'; showModal = false">Đi trước</button>
+                        <button type="button" class="btn btn-danger" @click="turn = 'B'; showModal = false">Đi sau</button>
                     </div>
                 </div>
             </div>
@@ -87,15 +97,26 @@
     const Game = {
         data() {
             return {
+                showModal: true,
                 turn: undefined,
                 depth: 3,
+                blackPoints: [
+                    [-10, -25, -40],
+                    [-5, -20, -35],
+                    [0, -15, -30],
+                ],
+                whitePoints: [
+                    [30, 35, 40],
+                    [15, 20, 25],
+                    [0, 5, 10],
+                ],
                 blacks: [
-                    { x: 1, y: 1 },
-                    { x: 1, y: 2 },
+                    { x: 0, y: 0 },
+                    { x: 0, y: 1 },
                 ],
                 whites: [
-                    { x: 2, y: 3 },
-                    { x: 3, y: 3 },
+                    { x: 1, y: 2 },
+                    { x: 2, y: 2 },
                 ],
                 pick: {},
             }
@@ -139,6 +160,16 @@
                 }
                 const index = this.whites.findIndex(item => item.x === this.pick.x && item.y === this.pick.y);
                 this.whites[index] = { x, y };
+                this.pick = {};
+                this.switchTurn();
+            },
+            playerMoveEdge() {
+                // loại bỏ tình huống chưa đến rìa bản đồ đã ra ngoài bản đồ
+                if (this.pick.y !== 0) {
+                    return;
+                }
+                const index = this.whites.findIndex(item => item.x === this.pick.x && item.y === this.pick.y);
+                this.whites[index] = {x: -1, y: -1};
                 this.pick = {};
                 this.switchTurn();
             },
