@@ -149,6 +149,7 @@
             },
             botMove() {
                 // minimax here
+                console.log(this.findNextStates(this.state, 'B'))
                 setTimeout(() => this.switchTurn(), 2000);
             },
             playerPick(x, y) {
@@ -181,7 +182,57 @@
                 this.switchTurn();
             },
             findNextStates(state, turn) {
-
+                let states = [];
+                for (let i = 0; i < this.depth; i++) {
+                    for (let j = 0; j < this.depth; j++) {
+                        if (turn === 'W' && state[i][j] === 1) {
+                            // trắng -> đi lên
+                            if (i >= 1 && state[i - 1][j] === 0) {
+                                const next = state.map(arr => arr.slice())
+                                next[i][j] = 0
+                                next[i - 1][j] = 1
+                                states.push(next)
+                            }
+                            // trắng -> sang trái
+                            if (j >= 1 && state[i][j - 1] === 0) {
+                                const next = state.map(arr => arr.slice())
+                                next[i][j] = 0
+                                next[i][j - 1] = 1
+                                states.push(next)
+                            }
+                            // trắng -> sang phải
+                            if (j + 1 < this.depth && [i][j + 1] === 0) {
+                                const next = state.map(arr => arr.slice())
+                                next[i][j] = 0
+                                next[i][j + 1] = 1
+                                states.push(next)
+                            }
+                        } else if (turn === 'B' && state[i][j] === -1) {
+                            // đen -> sang phải
+                            if (j + 1 < this.depth && state[i][j + 1] === 0) {
+                                const next = state.map(arr => arr.slice())
+                                next[i][j] = 0
+                                next[i][j + 1] = -1
+                                states.push(next)
+                            }
+                            // đen -> đi lên
+                            if (i >= 1 && state[i - 1][j] === 0) {
+                                const next = state.map(arr => arr.slice())
+                                next[i][j] = 0
+                                next[i - 1][j] = -1
+                                states.push(next)
+                            }
+                            // đen -> đi xuống
+                            if (i + 1 < this.depth && state[i + 1][j] === 0) {
+                                const next = state.map(arr => arr.slice())
+                                next[i][j] = 0
+                                next[i + 1][j] = -1
+                                states.push(next)
+                            }
+                        }
+                    }
+                }
+                return states;
             },
             eval(state) {
                 let val = 0;
