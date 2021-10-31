@@ -81,8 +81,10 @@
                         <h5>Chọn lượt chơi của bạn</h5>
                     </div>
                     <div class="modal-footer d-flex justify-content-center">
-                        <button type="button" class="btn btn-primary" @click="turn = 'W'; showModal = false">Đi trước</button>
-                        <button type="button" class="btn btn-danger" @click="turn = 'B'; showModal = false">Đi sau</button>
+                        <button type="button" class="btn btn-primary" @click="turn = 'W'; showModal = false">Đi
+                            trước</button>
+                        <button type="button" class="btn btn-danger" @click="turn = 'B'; showModal = false">Đi
+                            sau</button>
                     </div>
                 </div>
             </div>
@@ -180,8 +182,37 @@
                 this.pick = {};
                 this.switchTurn();
             },
-            findNextStates(state) {
-                
+            findNextStates(state, turn) {
+
+            },
+            eval(state) {
+                let val = 0;
+                for (let i = 0; i < this.depth; i++) {
+                    for (let j = 0; j < this.depth; j++) {
+                        if (state[i][j] === 1) {
+                            val += this.whitePoints[i][j];
+                            // kiểm tra đen chặn trực tiếp trắng
+                            if (i - 1 >= 0 && state[i - 1][j] === -1)
+                                val -= 40;
+                            // kiểm tra đen chặn gián tiếp trắng
+                            for (let s = i - 2; s >= 0; s--) {
+                                if (state[s][j] === -1)
+                                    val -= 30;
+                            }
+                        } else if (state[i][j] === -1) {
+                            val += this.blackPoints[i][j];
+                            // kiểm tra trắng chặn trực tiếp đen
+                            if (j + 1 < this.depth && state[i][j + 1] === 1)
+                                val += 40;
+                            // kiểm tra trắng chặn gián tiếp đen
+                            for (let s = j + 2; s < this.depth; s++) {
+                                if (state[i][s] === 1)
+                                    val += 30;
+                            }
+                        }
+                    }
+                }
+                return val;
             },
         },
     }
