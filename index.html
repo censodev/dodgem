@@ -92,6 +92,7 @@
     </div>
 </body>
 
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://unpkg.com/vue@next"></script>
 <script>
     const Game = {
@@ -128,6 +129,8 @@
         },
         watch: {
             turn(value) {
+                if (this.checkWin())
+                    return
                 if (value === 'B') {
                     this.botMove();
                 }
@@ -142,15 +145,18 @@
             },
             switchTurn() {
                 this.turn = this.turn === 'W' ? 'B' : 'W';
-                if (this.turn === 'W')
-                    console.log('Đến lượt của bạn')
-                else
-                    console.log('Chờ máy...')
             },
             botMove() {
-                // minimax here
-                console.log(this.findNextStates(this.state, 'B'))
-                setTimeout(() => this.switchTurn(), 2000);
+                const nextStates = this.findNextStates(this.state, 'B')
+                const evals = nextStates.map(s => this.eval(s))
+                const min = Math.min(...evals);
+                for (let i = 0; i < nextStates.length; i++) {
+                    if (evals[i] === min) {
+                        this.state = nextStates[i]
+                        break
+                    }
+                }
+                this.switchTurn()
             },
             playerPick(x, y) {
                 if (this.turn === 'W') {
@@ -187,10 +193,11 @@
                     for (let j = 0; j < this.depth; j++) {
                         if (turn === 'W' && state[i][j] === 1) {
                             // trắng -> đi lên
-                            if (i >= 1 && state[i - 1][j] === 0) {
+                            if (i === 0 || (i >= 1 && state[i - 1][j] === 0)) {
                                 const next = state.map(arr => arr.slice())
                                 next[i][j] = 0
-                                next[i - 1][j] = 1
+                                if (i !== 0)
+                                    next[i - 1][j] = 1
                                 states.push(next)
                             }
                             // trắng -> sang trái
@@ -209,10 +216,11 @@
                             }
                         } else if (turn === 'B' && state[i][j] === -1) {
                             // đen -> sang phải
-                            if (j + 1 < this.depth && state[i][j + 1] === 0) {
+                            if (j === this.depth - 1 || (j + 1 < this.depth && state[i][j + 1] === 0)) {
                                 const next = state.map(arr => arr.slice())
                                 next[i][j] = 0
-                                next[i][j + 1] = -1
+                                if (j !== this.depth - 1)
+                                    next[i][j + 1] = -1
                                 states.push(next)
                             }
                             // đen -> đi lên
@@ -235,10 +243,13 @@
                 return states;
             },
             eval(state) {
+                let numWhite = 2;
+                let numBlack = 2;
                 let val = 0;
                 for (let i = 0; i < this.depth; i++) {
                     for (let j = 0; j < this.depth; j++) {
                         if (state[i][j] === 1) {
+                            numWhite--
                             val += this.whitePoints[i][j];
                             // kiểm tra đen chặn trực tiếp trắng
                             if (i - 1 >= 0 && state[i - 1][j] === -1)
@@ -249,6 +260,7 @@
                                     val -= 30;
                             }
                         } else if (state[i][j] === -1) {
+                            numBlack--
                             val += this.blackPoints[i][j];
                             // kiểm tra trắng chặn trực tiếp đen
                             if (j + 1 < this.depth && state[i][j + 1] === 1)
@@ -261,7 +273,38 @@
                         }
                     }
                 }
+                val += numWhite * 50
+                val -= numBlack * 50
                 return val;
+            },
+            checkWin() {
+                let numBlack = 0
+                let numWhite = 0
+                for (let i = 0; i < this.depth; i++) {
+                    for (let j = 0; j < this.depth; j++) {
+                        if (this.state[i][j] === 1)
+                            numWhite++
+                        else if (this.state[i][j] === -1)
+                            numBlack++
+                    }
+                }
+                if (numBlack === 0) {
+                    Swal.fire({
+                        title: 'Rất tiếc, máy đã thắng bạn!',
+                        icon: 'error',
+                        confirmButtonText: 'Chơi lại',
+                    }).then(() => window.location = window.location)
+                    return true
+                }
+                if (numWhite === 0) {
+                    Swal.fire({
+                        title: 'Chúc mừng, bạn đã thắng!',
+                        icon: 'success',
+                        confirmButtonText: 'Chơi lại',
+                    }).then(() => window.location = window.location)
+                    return true
+                }
+                return false
             },
         },
     }
