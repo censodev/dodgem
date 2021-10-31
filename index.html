@@ -31,24 +31,27 @@
         width: 100%;
     }
     .map {
-        border: 2px solid black;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
     }
     .map_block {
         width: 7rem;
         height: 7rem;
-        border: 2px solid black;
+        border: 2px solid var(--bs-secondary);
         display: flex;
         justify-content: center;
         align-items: center;
+        border-radius: 0.5rem;
     }
     .circle {
-        width: 6rem;
-        height: 6rem;
+        width: 5rem;
+        height: 5rem;
         border-radius: 50%;
-        border: 4px solid black;
+        border: 3px solid var(--bs-secondary);
     }
     .circle-black {
-        background-color: black;
+        background-color: var(--bs-secondary);
     }
     .modal-dialog {
         height: calc(100% - 1.75rem * 2);
@@ -62,7 +65,7 @@
         <div class="map-wrapper">
             <div class="map-space" @click="playerMoveEdge()"></div>
             <div class="map">
-                <div v-for="(_y, y) in depth" class="d-flex">
+                <div v-for="(_y, y) in depth" class="d-flex gap-1">
                     <div v-for="(_x, x) in depth" class="map_block">
                         <div v-if="isWhite(x, y)" @click="playerPick(x, y)" class="circle"></div>
                         <div v-else-if="isBlack(x, y)" class="circle circle-black"></div>
@@ -70,7 +73,7 @@
                     </div>
                 </div>
             </div>
-            <div class="map-space" @click="playerMoveEdge()"></div>
+            <div class="map-space"></div>
         </div>
         <div v-if="showModal" class="modal fade show d-block" data-bs-backdrop="static" id="exampleModal" tabindex="-1"
             aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -285,6 +288,7 @@
                         title: 'Rất tiếc, máy đã thắng bạn!',
                         icon: 'error',
                         confirmButtonText: 'Chơi lại',
+                        confirmButtonColor: '#0d6efd',
                     }).then(() => window.location = window.location)
                     return true
                 }
@@ -293,6 +297,7 @@
                         title: 'Chúc mừng, bạn đã thắng!',
                         icon: 'success',
                         confirmButtonText: 'Chơi lại',
+                        confirmButtonColor: '#0d6efd',
                     }).then(() => window.location = window.location)
                     return true
                 }
