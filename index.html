@@ -136,9 +136,12 @@
         },
         watch: {
             turn(value) {
-                if (this.checkWin())
-                    return
-                if (value === 'B') {
+                const checkEndGame = this.checkEndGame()
+                if (checkEndGame == 0)
+                    this.notifyEndGame(false)
+                else if (checkEndGame == 1)
+                    this.notifyEndGame()
+                else if (value === 'B') {
                     this.botMove();
                 }
             }
@@ -320,36 +323,53 @@
                 })
                 return chosenState
             },
-            checkWin() {
+            /**
+             * 0 ~ máy thắng
+             * 1 ~ bạn thắng
+             * -1 ~ chưa kết thúc
+             **/
+            checkEndGame() {
                 let numBlack = 0
                 let numWhite = 0
+                let deadBlack = 0
+                let deadWhite = 0
                 for (let i = 0; i < this.matrixSize; i++) {
                     for (let j = 0; j < this.matrixSize; j++) {
-                        if (this.state[i][j] === 1)
+                        if (this.state[i][j] === 1) {
+                            if ((this.state?.[i - 1]?.[j] ?? -1) === -1 && (this.state?.[i]?.[j + 1] ?? -1) === -1 && (this.state?.[i]?.[j - 1] ?? -1) === -1)
+                                deadWhite++
                             numWhite++
-                        else if (this.state[i][j] === -1)
+                        }
+                        else if (this.state[i][j] === -1) {
+                            if ((this.state?.[i - 1]?.[j] ?? 1) === 1 && (this.state?.[i + 1]?.[j] ?? 1) === 1 && (this.state?.[i]?.[j + 1] ?? 1) === 1)
+                                deadBlack++
                             numBlack++
+                        }
                     }
                 }
-                if (numBlack === 0) {
-                    Swal.fire({
-                        title: 'Rất tiếc, máy đã thắng bạn!',
-                        icon: 'error',
-                        confirmButtonText: 'Chơi lại',
-                        confirmButtonColor: '#0d6efd',
-                    }).then(() => window.location = window.location)
-                    return true
+                if (numBlack === 0 || deadWhite === numWhite) {
+                    return 0
                 }
-                if (numWhite === 0) {
+                if (numWhite === 0 || deadBlack === numBlack) {
+                    return 1
+                }
+                return -1
+            },
+            notifyEndGame(win = true) {
+                if (win)
                     Swal.fire({
                         title: 'Chúc mừng, bạn đã thắng!',
                         icon: 'success',
                         confirmButtonText: 'Chơi lại',
                         confirmButtonColor: '#0d6efd',
                     }).then(() => window.location = window.location)
-                    return true
-                }
-                return false
+                else
+                    Swal.fire({
+                        title: 'Rất tiếc, máy đã thắng bạn!',
+                        icon: 'error',
+                        confirmButtonText: 'Chơi lại',
+                        confirmButtonColor: '#0d6efd',
+                    }).then(() => window.location = window.location)
             },
         },
     }
