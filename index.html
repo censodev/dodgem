@@ -76,8 +76,8 @@
         <div class="map-wrapper">
             <div class="map-space" @click="playerMoveEdge()"></div>
             <div class="map">
-                <div v-for="(_y, y) in depth" class="d-flex gap-1">
-                    <div v-for="(_x, x) in depth" class="map_block">
+                <div v-for="(_y, y) in matrixSize" class="d-flex gap-1">
+                    <div v-for="(_x, x) in matrixSize" class="map_block">
                         <div v-if="isWhite(x, y)" @click="playerPick(x, y)" class="circle"></div>
                         <div v-else-if="isBlack(x, y)" class="circle circle-black"></div>
                         <div v-else @click="playerMove(x, y)" class="w-100 h-100"></div>
@@ -115,6 +115,7 @@
                 showModal: true,
                 turn: undefined,
                 depth: 3,
+                matrixSize: 3,
                 blackPoints: [
                     [-10, -25, -40],
                     [-5, -20, -35],
@@ -195,8 +196,8 @@
             },
             findNextStates(state, turn) {
                 let states = [];
-                for (let i = 0; i < this.depth; i++) {
-                    for (let j = 0; j < this.depth; j++) {
+                for (let i = 0; i < this.matrixSize; i++) {
+                    for (let j = 0; j < this.matrixSize; j++) {
                         if (turn === 'W' && state[i][j] === 1) {
                             // trắng -> đi lên
                             if (i === 0 || (i >= 1 && state[i - 1][j] === 0)) {
@@ -214,7 +215,7 @@
                                 states.push(next)
                             }
                             // trắng -> sang phải
-                            if (j + 1 < this.depth && [i][j + 1] === 0) {
+                            if (j + 1 < this.matrixSize && [i][j + 1] === 0) {
                                 const next = state.map(arr => arr.slice())
                                 next[i][j] = 0
                                 next[i][j + 1] = 1
@@ -222,10 +223,10 @@
                             }
                         } else if (turn === 'B' && state[i][j] === -1) {
                             // đen -> sang phải
-                            if (j === this.depth - 1 || (j + 1 < this.depth && state[i][j + 1] === 0)) {
+                            if (j === this.matrixSize - 1 || (j + 1 < this.matrixSize && state[i][j + 1] === 0)) {
                                 const next = state.map(arr => arr.slice())
                                 next[i][j] = 0
-                                if (j !== this.depth - 1)
+                                if (j !== this.matrixSize - 1)
                                     next[i][j + 1] = -1
                                 states.push(next)
                             }
@@ -237,7 +238,7 @@
                                 states.push(next)
                             }
                             // đen -> đi xuống
-                            if (i + 1 < this.depth && state[i + 1][j] === 0) {
+                            if (i + 1 < this.matrixSize && state[i + 1][j] === 0) {
                                 const next = state.map(arr => arr.slice())
                                 next[i][j] = 0
                                 next[i + 1][j] = -1
@@ -252,8 +253,8 @@
                 let numWhite = 2;
                 let numBlack = 2;
                 let val = 0;
-                for (let i = 0; i < this.depth; i++) {
-                    for (let j = 0; j < this.depth; j++) {
+                for (let i = 0; i < this.matrixSize; i++) {
+                    for (let j = 0; j < this.matrixSize; j++) {
                         if (state[i][j] === 1) {
                             numWhite--
                             val += this.whitePoints[i][j];
@@ -269,10 +270,10 @@
                             numBlack--
                             val += this.blackPoints[i][j];
                             // kiểm tra trắng chặn trực tiếp đen
-                            if (j + 1 < this.depth && state[i][j + 1] === 1)
+                            if (j + 1 < this.matrixSize && state[i][j + 1] === 1)
                                 val += 40;
                             // kiểm tra trắng chặn gián tiếp đen
-                            for (let s = j + 2; s < this.depth; s++) {
+                            for (let s = j + 2; s < this.matrixSize; s++) {
                                 if (state[i][s] === 1)
                                     val += 30;
                             }
@@ -286,8 +287,8 @@
             checkWin() {
                 let numBlack = 0
                 let numWhite = 0
-                for (let i = 0; i < this.depth; i++) {
-                    for (let j = 0; j < this.depth; j++) {
+                for (let i = 0; i < this.matrixSize; i++) {
+                    for (let j = 0; j < this.matrixSize; j++) {
                         if (this.state[i][j] === 1)
                             numWhite++
                         else if (this.state[i][j] === -1)
