@@ -114,7 +114,7 @@
             return {
                 showModal: true,
                 turn: undefined,
-                depth: 3,
+                depth: 7,
                 matrixSize: 3,
                 blackPoints: [
                     [-10, -25, -40],
@@ -154,15 +154,7 @@
                 this.turn = this.turn === 'W' ? 'B' : 'W';
             },
             botMove() {
-                const nextStates = this.findNextStates(this.state, 'B')
-                const evals = nextStates.map(s => this.eval(s))
-                const min = Math.min(...evals);
-                for (let i = 0; i < nextStates.length; i++) {
-                    if (evals[i] === min) {
-                        this.state = nextStates[i]
-                        break
-                    }
-                }
+                this.state = this.minimax(this.depth)
                 this.switchTurn()
             },
             playerPick(x, y) {
@@ -283,6 +275,50 @@
                 val += numWhite * 50
                 val -= numBlack * 50
                 return val;
+            },
+            isEndState(state) {
+                let numBlack = 0
+                let numWhite = 0
+                for (let i = 0; i < this.matrixSize; i++) {
+                    for (let j = 0; j < this.matrixSize; j++) {
+                        if (state[i][j] === 1)
+                            numWhite++
+                        else if (this.state[i][j] === -1)
+                            numBlack++
+                    }
+                }
+                return numBlack === 0 || numWhite === 0
+            },
+            maxVal(state, depth) {
+                if (depth === 0 || this.isEndState(state))
+                    return this.eval(state)
+                else {
+                    const nextStates = this.findNextStates(state, 'W')
+                    const minVals = nextStates.map(s => this.minVal(s, depth - 1))
+                    return Math.max(...minVals)
+                }
+            },
+            minVal(state, depth) {
+                if (depth === 0 || this.isEndState(state))
+                    return this.eval(state)
+                else {
+                    const nextStates = this.findNextStates(state, 'B')
+                    const maxVals = nextStates.map(s => this.maxVal(s, depth - 1))
+                    return Math.min(...maxVals)
+                }
+            },
+            minimax(depth) {
+                let min = 9999999999
+                let chosenState = null
+                const nextStates = this.findNextStates(this.state, 'B')
+                nextStates.forEach(s => {
+                    const maxVal = this.maxVal(s, depth - 1)
+                    if (min >= maxVal) {
+                        min = maxVal
+                        chosenState = s
+                    }
+                })
+                return chosenState
             },
             checkWin() {
                 let numBlack = 0
