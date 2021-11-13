@@ -114,7 +114,7 @@
             return {
                 showModal: true,
                 turn: undefined,
-                depth: 7,
+                depth: 10,
                 matrixSize: 3,
                 blackPoints: [
                     [-10, -25, -40],
@@ -275,6 +275,7 @@
                         }
                     }
                 }
+                // trạng thái có quân ngoài bản đồ +/- 50 điểm cho mỗi quân
                 val += numWhite * 50
                 val -= numBlack * 50
                 return val;
@@ -311,7 +312,7 @@
                 }
             },
             minimax(depth) {
-                let min = 9999999999
+                let min = 9999
                 let chosenState = null
                 const nextStates = this.findNextStates(this.state, 'B')
                 nextStates.forEach(s => {
@@ -329,28 +330,31 @@
              * -1 ~ chưa kết thúc
              **/
             checkEndGame() {
+                // số quân đen/trắng trên bàn
                 let numBlack = 0
                 let numWhite = 0
+                // số quân đen trắng bị chặn không thể đi
                 let deadBlack = 0
                 let deadWhite = 0
                 for (let i = 0; i < this.matrixSize; i++) {
                     for (let j = 0; j < this.matrixSize; j++) {
                         if (this.state[i][j] === 1) {
-                            if ((this.state?.[i - 1]?.[j] ?? -1) === -1 && (this.state?.[i]?.[j + 1] ?? -1) === -1 && (this.state?.[i]?.[j - 1] ?? -1) === -1)
+                            if ((this.state?.[i - 1]?.[j] ?? 0) === -1 && (this.state?.[i]?.[j + 1] ?? -1) === -1 && (this.state?.[i]?.[j - 1] ?? -1) === -1)
                                 deadWhite++
                             numWhite++
                         }
                         else if (this.state[i][j] === -1) {
-                            if ((this.state?.[i - 1]?.[j] ?? 1) === 1 && (this.state?.[i + 1]?.[j] ?? 1) === 1 && (this.state?.[i]?.[j + 1] ?? 1) === 1)
+                            if ((this.state?.[i - 1]?.[j] ?? 1) === 1 && (this.state?.[i + 1]?.[j] ?? 1) === 1 && (this.state?.[i]?.[j + 1] ?? 0) === 1)
                                 deadBlack++
                             numBlack++
                         }
                     }
                 }
-                if (numBlack === 0 || deadWhite === numWhite) {
+                // khi số quân đen/trắng == 0 hoặc 1 bên không thể di chuyển -> kết thúc
+                if (numBlack === 0 || (numWhite > 0 && deadWhite === numWhite)) {
                     return 0
                 }
-                if (numWhite === 0 || deadBlack === numBlack) {
+                if (numWhite === 0 || (numBlack > 0 && deadBlack === numBlack)) {
                     return 1
                 }
                 return -1
