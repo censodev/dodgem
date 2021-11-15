@@ -112,29 +112,34 @@
     const Game = {
         data() {
             return {
-                showModal: true,
-                turn: undefined,
-                depth: 10,
-                matrixSize: 3,
-                blackPoints: [
+                showModal: true,        // Có hiển thị bảng chọn lượt hay không
+                turn: undefined,        // Lượt chơi, W ~ quân trắng đi, B ~ quân đen được đi
+                depth: 10,              // Độ sâu cây trò chơi
+                matrixSize: 3,          // Diện tích bàn chơi
+                blackPoints: [          // Ma trận điểm cho quân đen
                     [-10, -25, -40],
                     [-5, -20, -35],
                     [0, -15, -30],
                 ],
-                whitePoints: [
+                whitePoints: [          // Ma trận điểm cho quân trắng
                     [30, 35, 40],
                     [15, 20, 25],
                     [0, 5, 10],
                 ],
-                state: [
+                state: [                // Trạng thái trò chơi, -1 ~ quân đen, 1 ~ quân trắng
                     [-1, 0, 0],
                     [-1, 0, 0],
                     [0, 1, 1],
                 ],
-                pick: {},
+                pick: {},               // Tọa độ người chơi chọn để di chuyển quân
             }
         },
         watch: {
+            /**
+             * Mỗi khi có sự thay đổi lượt chơi
+             * -> kiểm tra xem có đủ điều kiện kết thúc trò chơi -> thông báo
+             * -> nếu lượt tiếp theo là máy -> cho máy tính toán di chuyển
+             * */
             turn(value) {
                 const checkEndGame = this.checkEndGame()
                 if (checkEndGame == 0)
